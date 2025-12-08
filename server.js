@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -7,7 +8,9 @@ const app = express();
 
 // Middleware
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
+// Tambahkan path.join agar Vercel tahu lokasi folder views
+app.set('views', path.join(__dirname, 'views')); 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
