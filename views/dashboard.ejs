@@ -5,27 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - DompetKita</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        /* Modal Style */
+        #exportModal { background-color: rgba(0,0,0,0.5); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
     <!-- Navbar -->
-        <nav class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold inline align-middle">DompetKita 💰</h1>
+    <nav class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
+        <div>
+            <h1 class="text-xl font-bold inline align-middle">DompetKita 💰</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden md:block">
+                <p class="font-bold text-sm"><%= user.name || 'User' %></p>
+                <p class="text-xs text-blue-200"><%= user.email %></p>
             </div>
-            <div class="flex items-center gap-4">
-                <!-- Menampilkan Nama User & Email -->
-                <div class="text-right hidden md:block">
-                    <p class="font-bold text-sm"><%= user.name || 'User' %></p>
-                    <p class="text-xs text-blue-200"><%= user.email %></p>
-                </div>
-                <a href="/logout" class="bg-red-500 px-3 py-1 rounded text-sm hover:bg-red-600 transition">Logout</a>
-            </div>
-        </nav>
+            <a href="/logout" class="bg-red-500 px-3 py-1 rounded text-sm hover:bg-red-600 transition">Logout</a>
+        </div>
+    </nav>
 
     <div class="container mx-auto p-4 md:p-8">
         
@@ -46,44 +46,51 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Form Input -->
-            <div class="bg-white p-6 rounded-lg shadow-lg lg:col-span-1 h-fit">
+            <!-- Form Input Transaksi -->
+            <div class="bg-white p-6 rounded-lg shadow-lg lg:col-span-1 h-fit sticky top-24">
                 <h2 class="text-lg font-bold mb-4 border-b pb-2">➕ Tambah Transaksi</h2>
-                <form action="/dashboard/add" method="POST" enctype="multipart/form-data">
+                <form action="/dashboard/add" method="POST" enctype="multipart/form-data" onsubmit="prepareSubmit()">
                     <div class="mb-3">
                         <label class="block text-xs font-bold mb-1">Tanggal</label>
-                        <input type="date" name="date" required class="w-full border p-2 rounded">
+                        <input type="date" name="date" required class="w-full border p-2 rounded bg-gray-50">
                     </div>
                     <div class="mb-3">
                         <label class="block text-xs font-bold mb-1">Keterangan</label>
                         <input type="text" name="description" required placeholder="Cth: Belanja Pasar" class="w-full border p-2 rounded">
                     </div>
+                    
                     <div class="grid grid-cols-2 gap-2 mb-3">
                         <div>
                             <label class="block text-xs font-bold mb-1">Kategori</label>
-                            <select name="category" class="w-full border p-2 rounded">
-                                <option value="Pengeluaran">🔴 Pengeluaran</option>
-                                <option value="Pemasukan">🟢 Pemasukan</option>
+                            <select name="category" class="w-full border p-2 rounded bg-white">
+                                <option value="Pengeluaran">🔴 Keluar</option>
+                                <option value="Pemasukan">🟢 Masuk</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold mb-1">Nominal</label>
-                            <input type="number" name="amount" required placeholder="0" class="w-full border p-2 rounded">
+                            <label class="block text-xs font-bold mb-1">Metode</label>
+                            <select name="method" class="w-full border p-2 rounded bg-white">
+                                <option value="Cash">Cash</option>
+                                <option value="Transfer">Transfer</option>
+                                <option value="QRIS">QRIS</option>
+                            </select>
                         </div>
                     </div>
+
+                    <!-- UPDATE: INPUT NOMINAL RUPIAH -->
                     <div class="mb-3">
-                        <label class="block text-xs font-bold mb-1">Metode</label>
-                        <select name="method" class="w-full border p-2 rounded">
-                            <option value="Cash">Cash</option>
-                            <option value="Transfer">Transfer</option>
-                            <option value="QRIS">QRIS</option>
-                        </select>
+                        <label class="block text-xs font-bold mb-1">Nominal (Rp)</label>
+                        <!-- Input visual (User ngetik disini) -->
+                        <input type="text" id="rupiahInput" class="w-full border p-2 rounded text-lg font-bold text-right" placeholder="0" onkeyup="formatRupiah(this)">
+                        <!-- Input rahasia (Dikirim ke server) -->
+                        <input type="hidden" name="amount" id="realAmount">
                     </div>
+
                     <div class="mb-4">
                         <label class="block text-xs font-bold mb-1">Bukti Foto (Opsional)</label>
-                        <input type="file" name="evidence" accept="image/*" class="w-full text-sm">
+                        <input type="file" name="evidence" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Simpan Transaksi</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 transition">Simpan Transaksi</button>
                 </form>
             </div>
 
@@ -91,14 +98,15 @@
             <div class="bg-white p-6 rounded-lg shadow-lg lg:col-span-2">
                 <div class="flex justify-between items-center mb-4 border-b pb-2">
                     <h2 class="text-lg font-bold">📚 Buku Besar</h2>
-                    <a href="/dashboard/export" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 flex items-center">
+                    <!-- UPDATE: Button Trigger Modal -->
+                    <button onclick="toggleModal(true)" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 flex items-center gap-2">
                         📄 Export Excel
-                    </a>
+                    </button>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
                     <table class="w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
                             <tr>
                                 <th class="px-3 py-3">Tgl</th>
                                 <th class="px-3 py-3">Ket</th>
@@ -106,25 +114,28 @@
                                 <th class="px-3 py-3 text-right">Debit</th>
                                 <th class="px-3 py-3 text-right">Kredit</th>
                                 <th class="px-3 py-3 text-right">Saldo</th>
-                                <th class="px-3 py-3">Bukti</th>
+                                <th class="px-3 py-3 text-center">Bukti</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <% if(transactions.length === 0) { %>
+                                <tr><td colspan="7" class="text-center py-4">Belum ada transaksi</td></tr>
+                            <% } %>
                             <% transactions.forEach(t => { %>
                             <tr class="bg-white border-b hover:bg-gray-50">
                                 <td class="px-3 py-2 whitespace-nowrap"><%= t.date %></td>
-                                <td class="px-3 py-2"><%= t.description %></td>
+                                <td class="px-3 py-2 font-medium text-gray-900"><%= t.description %></td>
                                 <td class="px-3 py-2">
-                                    <span class="<%= t.category == 'Pemasukan' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100' %> px-2 py-1 rounded-full text-xs">
-                                        <%= t.category %>
+                                    <span class="<%= t.category == 'Pemasukan' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100' %> px-2 py-1 rounded-full text-xs font-bold">
+                                        <%= t.category == 'Pemasukan' ? 'Masuk' : 'Keluar' %>
                                     </span>
                                 </td>
-                                <td class="px-3 py-2 text-right text-green-600"><%= t.category == 'Pemasukan' ? t.amount.toLocaleString() : '-' %></td>
-                                <td class="px-3 py-2 text-right text-red-600"><%= t.category == 'Pengeluaran' ? t.amount.toLocaleString() : '-' %></td>
-                                <td class="px-3 py-2 text-right font-bold"><%= t.saldo.toLocaleString() %></td>
+                                <td class="px-3 py-2 text-right text-green-600"><%= t.category == 'Pemasukan' ? t.amount.toLocaleString('id-ID') : '-' %></td>
+                                <td class="px-3 py-2 text-right text-red-600"><%= t.category == 'Pengeluaran' ? t.amount.toLocaleString('id-ID') : '-' %></td>
+                                <td class="px-3 py-2 text-right font-bold text-blue-700"><%= t.saldo.toLocaleString('id-ID') %></td>
                                 <td class="px-3 py-2 text-center">
                                     <% if(t.imageUrl) { %>
-                                        <a href="<%= t.imageUrl %>" target="_blank" class="text-blue-500 underline">Lihat</a>
+                                        <a href="<%= t.imageUrl %>" target="_blank" class="text-blue-500 hover:underline text-xs">Lihat</a>
                                     <% } else { %> - <% } %>
                                 </td>
                             </tr>
@@ -135,5 +146,88 @@
             </div>
         </div>
     </div>
+
+    <!-- UPDATE: MODAL EXPORT EXCEL -->
+    <div id="exportModal" class="fixed inset-0 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-96 animate-fade-in">
+            <h3 class="text-lg font-bold mb-4">Export Data Excel</h3>
+            <form action="/dashboard/export" method="GET">
+                <div class="mb-3">
+                    <label class="block text-sm font-medium mb-1">Pilih Periode</label>
+                    <select id="exportType" name="type" class="w-full border p-2 rounded" onchange="handleExportType()">
+                        <option value="all">Semua Transaksi</option>
+                        <option value="daily">Harian</option>
+                        <option value="monthly">Bulanan</option>
+                        <option value="yearly">Tahunan</option>
+                    </select>
+                </div>
+
+                <!-- Input Tanggal (Hidden by default) -->
+                <div id="inputDate" class="mb-4 hidden">
+                    <label class="block text-sm font-medium mb-1">Pilih Tanggal</label>
+                    <input type="date" name="date" class="w-full border p-2 rounded">
+                </div>
+
+                <!-- Input Bulan (Hidden by default) -->
+                <div id="inputMonth" class="mb-4 hidden">
+                    <label class="block text-sm font-medium mb-1">Pilih Bulan</label>
+                    <input type="month" name="month" class="w-full border p-2 rounded">
+                </div>
+
+                <!-- Input Tahun (Hidden by default) -->
+                <div id="inputYear" class="mb-4 hidden">
+                    <label class="block text-sm font-medium mb-1">Masukkan Tahun</label>
+                    <input type="number" name="year" placeholder="2024" min="2000" max="2100" class="w-full border p-2 rounded">
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="toggleModal(false)" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Script Format Rupiah (Titik Otomatis)
+        function formatRupiah(input) {
+            // Hapus karakter selain angka
+            let value = input.value.replace(/\D/g, "");
+            // Tambahkan titik setiap 3 digit
+            input.value = new Intl.NumberFormat('id-ID').format(value);
+            // Simpan nilai asli (angka murni) ke input hidden agar bisa dikirim ke server
+            document.getElementById('realAmount').value = value;
+        }
+
+        function prepareSubmit() {
+            // Pastikan nilai hidden terisi sebelum submit (jika user copas)
+            let val = document.getElementById('rupiahInput').value.replace(/\D/g, "");
+            document.getElementById('realAmount').value = val;
+        }
+
+        // 2. Script Modal Export
+        function toggleModal(show) {
+            const modal = document.getElementById('exportModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function handleExportType() {
+            const type = document.getElementById('exportType').value;
+            document.getElementById('inputDate').classList.add('hidden');
+            document.getElementById('inputMonth').classList.add('hidden');
+            document.getElementById('inputYear').classList.add('hidden');
+
+            if (type === 'daily') document.getElementById('inputDate').classList.remove('hidden');
+            if (type === 'monthly') document.getElementById('inputMonth').classList.remove('hidden');
+            if (type === 'yearly') document.getElementById('inputYear').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
